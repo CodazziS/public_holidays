@@ -20,18 +20,57 @@
 
 from openerp.osv import osv, fields
 
+from datetime import date
+from datetime import timedelta
+
+class easter_day(date):
+
+    def __new__(cls, year = 0):
+        
+        if year == 0:
+            year = date.today().year
+
+        a = year // 100
+        b = year % 100
+        c = (3 * (a + 25)) // 4
+        d = (3 * (a + 25)) % 4
+        e = (8 * (a + 11)) // 25
+        f = (5 * a + b) % 19
+        g = (19 * f + c - e) % 30
+        h = (f + 11 * g) // 319
+        j = (60 * (5 - d) + b) // 4
+        k = (60 * (5 - d) + b) % 4
+        m = (2 * j - k - g + h) % 7
+        n = (g - h + m + 114) // 31
+        p = (g - h + m + 114) % 31
+
+        return super(easter_day, cls).__new__(cls, year, n, p + 1)
+
+    def __add__(self, other):
+        if type(other) is int:
+            return self + timedelta(other)
+        else:
+            return super(easter_day, self).__add__(other)
+     
+    def __sub__(self, other):
+        if type(other) is int:
+            return self - timedelta(other)
+        else:
+            return super(easter_day, self).__sub__(other)
+
+
 class public_holidays(osv.Model):
     _name = 'public_holidays'
-    _description = 'Gestion des jours fériés'
+    _description = 'Public holidays management'
     _rec_name = 'pub_holiday_name'
     
     _columns = {
-        'pub_holiday_id' : fields.integer('holiday id', required=True),
-        'pub_holiday_name' : fields.char('Nom', required=True),
-        'pub_holiday_type' : fields.selection([(0, 'Fixe'), (1, 'Variable')], string='Type', required=True),
-        'pub_holiday_month' : fields.integer('Mois', required=False),e
-        'pub_holiday_day' : fields.integer('Jour', required=False),
-        'pub_holiday_regime' : fields.selection([(0, 'Général'), (1, 'Local')], string='Régime', required=True),
+        'pub_holiday_id' : fields.integer('Holiday id', required=True),
+        'pub_holiday_name' : fields.char('Name', required=True),
+        'pub_holiday_type' : fields.selection([(0, 'Fixed'), (1, 'Variable')], string='Type', required=True),
+        'pub_holiday_month' : fields.integer('Month', required=False),
+        'pub_holiday_day' : fields.integer('Day', required=False),
+        'pub_holiday_regime' : fields.selection([(0, 'General'), (1, 'Local')], string='Régime', required=True),
         'pub_holiday_expr' : fields.char('Expression', required=False),
     }
 

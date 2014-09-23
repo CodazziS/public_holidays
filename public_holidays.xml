@@ -2,70 +2,7 @@
 <openerp>
   <data>
     
-    <record id="restaurant_vouchers_form" model="ir.ui.view">
-        <field name="name">restaurant.vouchers.form</field>
-        <field name="model">hr.restaurant.vouchers</field>
-        <field name="arch" type="xml">
-          <form string="Tickets restaurant" version="7.0">  
-            <group col="4">  
-              <field name="employee_id"/>
-              <field name="tickets_year"/>
-              <field name="tickets_month"/>
-              <field name="tickets_theo"/>
-              <field name="tickets_removed"/>
-              <field name="tickets_real"/>
-            </group>
-          </form>
-        </field>
-    </record>
-
-    <record id="restaurant_vouchers_tree" model="ir.ui.view">
-      <field name="name">restaurant.vouchers.tree</field>
-      <field name="model">hr.restaurant.vouchers</field>
-      <field name="arch" type="xml">
-        <tree string="Tickets restaurant">
-          <field name="employee_id"/>
-          <field name="tickets_year"/>
-          <field name="tickets_month"/> 
-          <field name="tickets_theo"/>
-          <field name="tickets_removed"/>
-          <field name="tickets_real"/>
-        </tree>
-      </field>
-    </record>
- 
-     <record model="ir.actions.act_window" id="action_restaurant_vouchers">
-      <field name="name">Users</field>
-      <field name="type">ir.actions.act_window</field>
-      <field name="res_model">hr.restaurant.vouchers</field>
-      <field name="view_type">form</field>
-      <field name="view_mode">tree,form</field>
-      <field name="view_id" ref="restaurant_vouchers_tree"/>
-      <field name="context">{"search_default_filter_see_all":1}</field>
-      <field name="help" type="html">
-        <p class="oe_view_nocontent_create">
-          Click here to create a user for the module test.
-        </p>
-      </field>
-    </record>
     
-    <menuitem name="Tickets restaurants" parent="hr.menu_hr_main" id="menu_open_restaurant_vouchers" sequence="30" action="action_restaurant_vouchers"/>
-
-
-    <!--
-    <record model="ir.ui.view" id="pos_cashier_search">
-      <field name="name">module.test.search</field>
-      <field name="model">module.test</field>
-      <field name="arch" type="xml">
-        <search string="Users">
-          <field name="user_name" />
-          <filter name="filter_see_all" string="All" domain="['|', ('active', '=',True), ('active', '=',False)]" />
-          <filter name="filter_see_active" string="Active" domain="[('active', '=',True)]" />
-          <filter name="filter_see_inactive" string="Inactive" domain="[('active', '=',False)]" />
-        </search>
-      </field>
-    </record>
-    -->
     
   </data>
 </openerp>
