@@ -1,33 +1,10 @@
-# -*- coding: utf-8 -*-
-##############################################################################
-#
-#    Copyright (C) 2014 TeMPO Consulting
-#
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU Affero General Public License as
-#    published by the Free Software Foundation, either version 3 of the
-#    License, or (at your option) any later version.
-#
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU Affero General Public License for more details.
-#
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
-##############################################################################
+from datetime import date, timedelta
 
-from openerp.osv import osv, fields
-
-from datetime import date
-from datetime import timedelta
 
 class easter_day(date):
-
-    def __new__(cls, year = 0):
+    def __new__(cls, year=None):
         
-        if year == 0:
+        if not year:
             year = date.today().year
 
         a = year // 100
@@ -59,23 +36,41 @@ class easter_day(date):
             return super(easter_day, self).__sub__(other)
 
 
-class public_holidays(osv.Model):
-    _name = 'public_holidays'
-    _description = 'Public holidays management'
-    _rec_name = 'pub_holiday_name'
-    
+class french_holidays(object):
+
+    def __init__(self, year=None):
+
+        if not year:
+            year = date.today().year
+
+        self._holidays = [
+
+            date(year, 1, 1),       # Jour de l'an
+            easter_day(year) - 2,   # Vendredi Saint (Alsace-Moselle)
+            easter_day(year),       # Dimanche de Pâques
+            easter_day(year) + 1,   # Lundi de Pâques
+            date(year, 5, 1),       # Fête du travail
+            date(year, 5, 8),       # Victoire 1945
+            easter_day(year) + 39,  # Jeudi de l'Ascension
+            easter_day(year) + 49,  # Dimanche de Pentecote
+            easter_day(year) + 50,  # Lundi de Pentecote
+            date(year, 7, 14),      # Fête Nationale
+            date(year, 8, 15),      # Assomption
+            date(year, 11, 1),      # Toussaint
+            date(year, 11, 11),     # Armistice de 1918
+            date(year, 12, 25),     # Noël
+            date(year, 12, 26),     # Saint Etienne (Alsace-Moselle)
+
+        ]
+
+    def to_array(self):
+        return self._holidays  
+
+
+class public_holidays(osv.osv):
+
     _columns = {
-        'pub_holiday_id' : fields.integer('Holiday id', required=True),
-        'pub_holiday_name' : fields.char('Name', required=True),
-        'pub_holiday_type' : fields.selection([(0, 'Fixed'), (1, 'Variable')], string='Type', required=True),
-        'pub_holiday_month' : fields.integer('Month', required=False),
-        'pub_holiday_day' : fields.integer('Day', required=False),
-        'pub_holiday_regime' : fields.selection([(0, 'General'), (1, 'Local')], string='Régime', required=True),
-        'pub_holiday_expr' : fields.char('Expression', required=False),
+        'date': fields.date('Date'),
+        'holiday': fields.boolean('Holiday'),
+        #m2o user_id ...
     }
-
-    _defaults = {
-        'pub_holiday_regime' : 0,
-    }
-
-# vim:expandtab:smartindent:tabstop=4:softtabstop=4:shiftwidth=4:
