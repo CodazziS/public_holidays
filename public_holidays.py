@@ -1,10 +1,11 @@
+from openerp.osv import fields, osv
 from datetime import date, timedelta
 
 
 class easter_day(date):
     def __new__(cls, year=None):
         
-        if not year:
+        if year is None:
             year = date.today().year
 
         a = year // 100
@@ -38,36 +39,43 @@ class easter_day(date):
 
 class french_holidays(object):
 
-    def __init__(self, year=None):
+    def __init__(self, year=None, country=None):
 
-        if not year:
+        if year is None:
             year = date.today().year
 
         self._holidays = [
 
             date(year, 1, 1),       # Jour de l'an
             easter_day(year) - 2,   # Vendredi Saint (Alsace-Moselle)
-            easter_day(year),       # Dimanche de Pâques
-            easter_day(year) + 1,   # Lundi de Pâques
-            date(year, 5, 1),       # Fête du travail
+            easter_day(year),       # Dimanche de P?ques
+            easter_day(year) + 1,   # Lundi de P?ques
+            date(year, 5, 1),       # F?te du travail
             date(year, 5, 8),       # Victoire 1945
             easter_day(year) + 39,  # Jeudi de l'Ascension
             easter_day(year) + 49,  # Dimanche de Pentecote
             easter_day(year) + 50,  # Lundi de Pentecote
-            date(year, 7, 14),      # Fête Nationale
+            date(year, 7, 14),      # F?te Nationale
             date(year, 8, 15),      # Assomption
             date(year, 11, 1),      # Toussaint
             date(year, 11, 11),     # Armistice de 1918
-            date(year, 12, 25),     # Noël
+            date(year, 12, 25),     # No?l
             date(year, 12, 26),     # Saint Etienne (Alsace-Moselle)
 
         ]
 
-    def to_array(self):
-        return self._holidays  
+    def to_list(self):
+        return self._holidays
 
 
-class public_holidays(osv.osv):
+class holidays(osv.osv):
+    _name = 'public_holidays.holidays'
+    _description = 'Store holidays'
+
+    def get_range(self, cr, uid, date_start, date_stop, country=None):
+        res = {}
+        
+        return res
 
     _columns = {
         'date': fields.date('Date'),
