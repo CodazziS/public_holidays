@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+
+<data>
+    <record model="ir.ui.view" id="view_users_holidays_config">
+        <field name="name">view.users.public_holidays.config</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='preferences']" position="after">
+                <group string="Working days ">
+                    <field name="monday" readonly="0"/>
+                    <field name="tuesday" readonly="0"/>
+                    <field name="wednesday" readonly="0"/>
+                    <field name="thuesday" readonly="0"/>
+                    <field name="friday" readonly="0"/>
+                    <field name="saturday" readonly="0"/>
+                    <field name="sunday" readonly="0"/>
+                    <field name="country" readonly="0"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_company_holidays_config" model="ir.ui.view">
+        <field name="name">view.company.public_holidays.config</field>
+        <field name="model">res.company</field>
+        <field name="inherit_id" ref="base.view_company_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='account_grp']" position="after">
+                <group name="holidays" string="Working days">
+                    <field name="monday" readonly="0"/>
+                    <field name="tuesday" readonly="0"/>
+                    <field name="wednesday" readonly="0"/>
+                    <field name="thuesday" readonly="0"/>
+                    <field name="friday" readonly="0"/>
+                    <field name="saturday" readonly="0"/>
+                    <field name="sunday" readonly="0"/>
+                    <field name="country" readonly="0"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</data>
+</openerp>

@@ -68,17 +68,53 @@ class french_holidays(object):
         return self._holidays
 
 
-class holidays(osv.osv):
-    _name = 'public_holidays.holidays'
-    _description = 'Store holidays'
+class public_holidays_holidays(osv.osv):
+    _name = 'public.holidays.holidays'
+    _description = 'Get days'
 
-    def get_range(self, cr, uid, date_start, date_stop, country=None):
+    def get_range(self, date_start, date_stop):
         res = {}
-        
-        return res
+        # @TODO when french_holidays get all params 
+        x = french_holidays(year=date_start.year)
+        return x.to_list()
+
+
+class holidays_days(osv.osv):
+    _name = 'public_holidays.holidays_days'
+    _description = 'Store holidays days'
 
     _columns = {
         'date': fields.date('Date'),
         'holiday': fields.boolean('Holiday'),
         #m2o user_id ...
+    }
+
+
+class holidays_config_user(osv.osv):
+    _inherit = 'res.users'
+
+    _columns = {
+        'monday': fields.boolean('Monday'),
+        'tuesday': fields.boolean('Tuesday'),
+        'wednesday': fields.boolean('Wednesday'),
+        'thuesday': fields.boolean('thuesday'),
+        'friday': fields.boolean('Friday'),
+        'saturday': fields.boolean('Saturday'),
+        'sunday': fields.boolean('Sunday'),
+        'country': fields.char('Country'),
+    }
+
+
+class holidays_config_conpany(osv.osv):
+    _inherit = 'res.company'
+
+    _columns = {
+        'monday': fields.boolean('Monday'),
+        'tuesday': fields.boolean('Tuesday'),
+        'wednesday': fields.boolean('Wednesday'),
+        'thuesday': fields.boolean('thuesday'),
+        'friday': fields.boolean('Friday'),
+        'saturday': fields.boolean('Saturday'),
+        'sunday': fields.boolean('Sunday'),
+        'country': fields.char('Country'),
     }
