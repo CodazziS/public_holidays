@@ -1,92 +1,82 @@
 from openerp.osv import fields, osv
 from datetime import date, timedelta
-
-
-class easter_day(date):
-    def __new__(cls, year=None):
-        
-        if year is None:
-            year = date.today().year
-
-        a = year // 100
-        b = year % 100
-        c = (3 * (a + 25)) // 4
-        d = (3 * (a + 25)) % 4
-        e = (8 * (a + 11)) // 25
-        f = (5 * a + b) % 19
-        g = (19 * f + c - e) % 30
-        h = (f + 11 * g) // 319
-        j = (60 * (5 - d) + b) // 4
-        k = (60 * (5 - d) + b) % 4
-        m = (2 * j - k - g + h) % 7
-        n = (g - h + m + 114) // 31
-        p = (g - h + m + 114) % 31
-
-        return super(easter_day, cls).__new__(cls, year, n, p + 1)
-
-    def __add__(self, other):
-        if type(other) is int:
-            return self + timedelta(other)
-        else:
-            return super(easter_day, self).__add__(other)
-     
-    def __sub__(self, other):
-        if type(other) is int:
-            return self - timedelta(other)
-        else:
-            return super(easter_day, self).__sub__(other)
-
-
-class french_holidays(object):
-
-    def __init__(self, year=None, country=None):
-
-        if year is None:
-            year = date.today().year
-
-        self._holidays = [
-
-            date(year, 1, 1),       # Jour de l'an
-            easter_day(year) - 2,   # Vendredi Saint (Alsace-Moselle)
-            easter_day(year),       # Dimanche de P?ques
-            easter_day(year) + 1,   # Lundi de P?ques
-            date(year, 5, 1),       # F?te du travail
-            date(year, 5, 8),       # Victoire 1945
-            easter_day(year) + 39,  # Jeudi de l'Ascension
-            easter_day(year) + 49,  # Dimanche de Pentecote
-            easter_day(year) + 50,  # Lundi de Pentecote
-            date(year, 7, 14),      # F?te Nationale
-            date(year, 8, 15),      # Assomption
-            date(year, 11, 1),      # Toussaint
-            date(year, 11, 11),     # Armistice de 1918
-            date(year, 12, 25),     # No?l
-            date(year, 12, 26),     # Saint Etienne (Alsace-Moselle)
-
-        ]
-
-    def to_list(self):
-        return self._holidays
+import datetime
+from work_calendar import calendars_factory
+from workalendar.europe import France, FranceAlsaceMoselle
 
 
 class public_holidays_holidays(osv.osv):
     _name = 'public.holidays.holidays'
     _description = 'Get days'
 
-    def get_range(self, date_start, date_stop):
-        res = {}
-        # @TODO when french_holidays get all params 
-        x = french_holidays(year=date_start.year)
-        return x.to_list()
+    def get_range(self, cr, uid, date_start, date_end, user=None, country='FR'):
+
+        calendars = calendars_factory.get_instance()
+        calendars.register(France, 'France', 'FR')
+        calendars.register(FranceAlsaceMoselle, 'France Alsace/Moselle', 'FA')
+
+        current_year = date_start.year
+        last_year = date_end.year
+        days = None
+
+        while current_year <= last_year:
+            current_days = calendars[country].holidays_set(current_year)
+
+            print "DAYS = " + str(days)
+            if days is None:
+                days = current_days
+            else:
+                days = days.union(current_days)
+            current_year += 1
+
+        print "FINAL DAYS = " + str(days)
+
+        fixed_days = self.pool.get('public.holidays.days')\
+            .search(cr, uid,
+                    [('date', '>', date_start), ('date', '<', date_end)])
+        # @TODO : Concat fixed days with regulars days
+
+        """
+        print "START LOOP"
+
+        for day in days:
+            print day
+            if day is datetime.date(2014, 7, 14):
+                print "DAY HERE"
+
+
+        print "END LOOP"
+        print "DAYS"
+        print days
+
+        print "FIXED DAYS"
+        print fixed_days
+        """
+        return days
+
+    def is_holiday(self, cr, uid, date):
+        days = self.get_range(cr, uid, date, date)
+
+        if date in days:
+            return True
+        return False
 
 
 class holidays_days(osv.osv):
-    _name = 'public_holidays.holidays_days'
+    _name = 'public.holidays.days'
     _description = 'Store holidays days'
+
+    #cr.execute()
+    #self.pool.get('nom_De_Classe').search(cr, uid, [('date_start', '>', 'XXX'), ('date_end', '<', 'XXX')])
 
     _columns = {
         'date': fields.date('Date'),
         'holiday': fields.boolean('Holiday'),
-        #m2o user_id ...
+        'company_id': fields.many2one(
+            'res.company',
+            'holidays_days',
+            'company',
+            required="true"),
     }
 
 
@@ -117,4 +107,9 @@ class holidays_config_conpany(osv.osv):
         'saturday': fields.boolean('Saturday'),
         'sunday': fields.boolean('Sunday'),
         'country': fields.char('Country'),
+        'holidays_days': fields.one2many(
+            'public.holidays.days',
+            'company_id',
+            'Holidays days',
+            required="true"),
     }

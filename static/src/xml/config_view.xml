@@ -37,6 +37,7 @@
                     <field name="saturday" readonly="0"/>
                     <field name="sunday" readonly="0"/>
                     <field name="country" readonly="0"/>
+                    <field name="holidays_days" readonly="0"/>
                 </group>
             </xpath>
         </field>
