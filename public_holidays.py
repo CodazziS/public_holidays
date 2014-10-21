@@ -11,30 +11,38 @@ class public_holidays_holidays(osv.osv):
 
     def get_range(self, cr, uid, date_start, date_end, user=None, country='FR'):
 
+        #INITIALSATION
         calendars = calendars_factory.get_instance()
         calendars.register(France, 'France', 'FR')
         calendars.register(FranceAlsaceMoselle, 'France Alsace/Moselle', 'FA')
 
+
+        days_off = None
+        # TASK 1 : get all dayoffs
         current_year = date_start.year
         last_year = date_end.year
-        days = None
-
         while current_year <= last_year:
             current_days = calendars[country].holidays_set(current_year)
 
-            print "DAYS = " + str(days)
-            if days is None:
-                days = current_days
+            #print "DAYS = " + str(current_days)
+            if days_off is None:
+                days_off = current_days
             else:
-                days = days.union(current_days)
+                days_off = days_off.union(current_days)
             current_year += 1
 
-        print "FINAL DAYS = " + str(days)
+        #print "FINAL DAYS = " + str(days_off)
 
+        # TASK 2 : if calendar, get all forced_days of this calendar
         fixed_days = self.pool.get('public.holidays.days')\
             .search(cr, uid,
                     [('date', '>', date_start), ('date', '<', date_end)])
         # @TODO : Concat fixed days with regulars days
+
+        # TASK 3 : (IF TASK 2) : sum of both arrays.
+
+        # TASK 4 return result
+        return days_off
 
         """
         print "START LOOP"
@@ -52,7 +60,6 @@ class public_holidays_holidays(osv.osv):
         print "FIXED DAYS"
         print fixed_days
         """
-        return days
 
     def is_holiday(self, cr, uid, date):
         days = self.get_range(cr, uid, date, date)
@@ -80,36 +87,20 @@ class holidays_days(osv.osv):
     }
 
 
-class holidays_config_user(osv.osv):
-    _inherit = 'res.users'
-
-    _columns = {
-        'monday': fields.boolean('Monday'),
-        'tuesday': fields.boolean('Tuesday'),
-        'wednesday': fields.boolean('Wednesday'),
-        'thuesday': fields.boolean('thuesday'),
-        'friday': fields.boolean('Friday'),
-        'saturday': fields.boolean('Saturday'),
-        'sunday': fields.boolean('Sunday'),
-        'country': fields.char('Country'),
-    }
-
-
 class holidays_config_conpany(osv.osv):
     _inherit = 'res.company'
 
-    _columns = {
-        'monday': fields.boolean('Monday'),
-        'tuesday': fields.boolean('Tuesday'),
-        'wednesday': fields.boolean('Wednesday'),
-        'thuesday': fields.boolean('thuesday'),
-        'friday': fields.boolean('Friday'),
-        'saturday': fields.boolean('Saturday'),
-        'sunday': fields.boolean('Sunday'),
-        'country': fields.char('Country'),
-        'holidays_days': fields.one2many(
-            'public.holidays.days',
-            'company_id',
-            'Holidays days',
-            required="true"),
-    }
+    def calendar_link(self, cr, uid, ids, context=None):
+        action = self.pool.get('ir.actions.act_window').for_xml_id(
+            cr,
+            uid,
+            'resource',
+            'action_resource_calendar_form',
+            context=context
+        )
+        return action
+
+
+
+
+
