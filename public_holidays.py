@@ -16,22 +16,18 @@ class public_holidays_holidays(osv.osv):
         calendars.register(France, 'France', 'FR')
         calendars.register(FranceAlsaceMoselle, 'France Alsace/Moselle', 'FA')
 
-
         days_off = None
         # TASK 1 : get all dayoffs
         current_year = date_start.year
         last_year = date_end.year
         while current_year <= last_year:
             current_days = calendars[country].holidays_set(current_year)
-
-            #print "DAYS = " + str(current_days)
             if days_off is None:
                 days_off = current_days
             else:
                 days_off = days_off.union(current_days)
             current_year += 1
 
-        #print "FINAL DAYS = " + str(days_off)
 
         # TASK 2 : if calendar, get all forced_days of this calendar
         fixed_days = self.pool.get('public.holidays.days')\
@@ -61,20 +57,21 @@ class public_holidays_holidays(osv.osv):
         print fixed_days
         """
 
-    def is_holiday(self, cr, uid, date):
+    def is_holiday(self, cr, uid, date, employee=None):
         days = self.get_range(cr, uid, date, date)
 
         if date in days:
-            return True
+            if employee is not None:
+                # AJOUTER LES CONGES
+                return True
+            else:
+                return True
         return False
 
 
 class holidays_days(osv.osv):
     _name = 'public.holidays.days'
     _description = 'Store holidays days'
-
-    #cr.execute()
-    #self.pool.get('nom_De_Classe').search(cr, uid, [('date_start', '>', 'XXX'), ('date_end', '<', 'XXX')])
 
     _columns = {
         'date': fields.date('Date'),
