@@ -2,6 +2,19 @@
 <openerp>
 
 <data>
+    <!-- CRON -->
+    <record id="ir_cron_public_holidays" model="ir.cron">
+        <field name="name">Run public holidays</field>
+        <field eval="True" name="active"/>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">minutes</field>
+        <field name="numbercall">-1</field>
+        <field name="doall" eval="False"/>
+        <field name="model">public.holidays</field>
+        <field name="function">cron_restore_holidays</field>
+        <field name="args">()</field>
+    </record>
 
     <record id="view_company_holidays_config" model="ir.ui.view">
         <field name="name">view.company.public_holidays.config</field>
@@ -15,6 +28,86 @@
             </xpath>
         </field>
     </record>
+
+    <!-- Holidays Calendar -->
+    <record id="public_holidays_search" model="ir.ui.view">
+        <field name="name">search</field>
+        <field name="model">public.holidays</field>
+        <field name="arch" type="xml">
+            <search string="Search Holidays">
+                <field name="date" string="Date"/>
+           </search>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="public_holidays_calendar">
+        <field name="name">calendar</field>
+        <field name="model">public.holidays</field>
+        <field name="arch" type="xml">
+            <calendar color="date" date_start="date" string="Hours">
+                <field name="date"/>
+            </calendar>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="public_holidays_tree">
+        <field name="name">tree</field>
+        <field name="model">public.holidays</field>
+        <field name="arch" type="xml">
+            <tree string="Hours">
+                <field name="date"/>
+            </tree>
+        </field>
+    </record>
+    <record id="public_holidays_act" model="ir.actions.act_window">
+        <field name="name">Holidays</field>
+        <field name="res_model">public.holidays</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">calendar,tree</field>
+        <field name="search_view_id" ref="public_holidays_search"/>
+    </record>
+    <menuitem action="public_holidays_act" id="public_holidays_menu" parent="base.menu_res_company_global"/>
+
+    <!-- Fixed days -->
+    <record id="public_holidays_search_fixed" model="ir.ui.view">
+        <field name="name">search_fixed</field>
+        <field name="model">public.holidays.days</field>
+        <field name="arch" type="xml">
+            <search string="Search Holidays">
+                <field name="date" string="Date"/>
+           </search>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="public_holidays_fixed_form">
+        <field name="name">public_holidays_fixed_form</field>
+        <field name="model">public.holidays.days</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Fixed days">
+                <field nolabel="0" name="date"/>
+                <field name="holiday"/>
+                <field name="company_id"/>
+            </form>
+        </field>
+    </record>
+    <record model="ir.ui.view" id="public_holidays_fixed_tree">
+        <field name="name">fixed_tree</field>
+        <field name="model">public.holidays.days</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Fixed days">
+                <field name="date"/>
+                <field name="holiday"/>
+                <field name="company_id"/>
+            </tree>
+        </field>
+    </record>
+    <record id="public_holidays_fixed__act" model="ir.actions.act_window">
+        <field name="name">Holidays Fixed days</field>
+        <field name="res_model">public.holidays.days</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="public_holidays_search_fixed"/>
+    </record>
+    <menuitem action="public_holidays_fixed__act" id="public_holidays_fixed_menu" parent="base.menu_res_company_global"/>
 
 </data>
 </openerp>
