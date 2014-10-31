@@ -9,7 +9,7 @@ class public_holidays_holidays(osv.osv):
     _name = 'public.holidays.holidays'
     _description = 'Get days'
 
-    def get_range(self, cr, uid, date_start, date_end, user=None, country='FR'):
+    def get_range(self, cr, uid, date_start, date_end, country='FA'):
 
         #INITIALSATION
         calendars = calendars_factory.get_instance()
@@ -17,7 +17,7 @@ class public_holidays_holidays(osv.osv):
         calendars.register(FranceAlsaceMoselle, 'France Alsace/Moselle', 'FA')
 
         days_off = None
-        # TASK 1 : get all dayoffs
+        # get all dayoffs
         current_year = date_start.year
         last_year = date_end.year
         while current_year <= last_year:
@@ -28,45 +28,63 @@ class public_holidays_holidays(osv.osv):
                 days_off = days_off.union(current_days)
             current_year += 1
 
+        days_off = list(days_off)
 
-        # TASK 2 : if calendar, get all forced_days of this calendar
-        fixed_days = self.pool.get('public.holidays.days')\
+        #convert in list
+        days_off_list = list()
+        for d in days_off:
+            days_off_list.append(str(d))
+
+        # if calendar, get all forced_days of this calendar
+        fdays = self.pool.get('public.holidays.days')\
             .search(cr, uid,
-                    [('date', '>', date_start), ('date', '<', date_end)])
-        # @TODO : Concat fixed days with regulars days
+                    [('date', '>=', date_start), ('date', '<', date_end)])
 
-        # TASK 3 : (IF TASK 2) : sum of both arrays.
-
-        # TASK 4 return result
-        return days_off
-
-        """
-        print "START LOOP"
-
-        for day in days:
-            print day
-            if day is datetime.date(2014, 7, 14):
-                print "DAY HERE"
-
-
-        print "END LOOP"
-        print "DAYS"
-        print days
-
-        print "FIXED DAYS"
-        print fixed_days
-        """
-
-    def is_holiday(self, cr, uid, date, employee=None):
-        days = self.get_range(cr, uid, date, date)
-
-        if date in days:
-            if employee is not None:
-                # AJOUTER LES CONGES
-                return True
+        for d in self.pool.get('public.holidays.days').browse(cr, uid, fdays):
+            if d.holiday is True:
+                if not str(d.date) in days_off_list:
+                    days_off_list.append(str(d.date))
             else:
-                return True
+                if d.date in days_off_list:
+                    days_off_list.remove(str(d.date))
+
+        # return result
+        return days_off_list
+
+    def is_holiday(self, cr, uid, date):
+        days = self.pool.get('public.holidays')\
+            .search(cr, uid, [('date', '=', str(date))])
+        if days:
+            return True
         return False
+
+
+class public_holidays(osv.osv):
+    _name = 'public.holidays'
+    _description = 'Store holidays'
+
+    def cron_restore_holidays(self, cr, uid, context=None):
+        # Remove all values
+        ids = self.search(cr, uid, [], context=context)
+        self.unlink(cr, uid, ids, context=context)
+
+        date_today = datetime.date.today()
+        year_begin = datetime.datetime(date_today.year, 1, 1, 0, 0)
+        year_end = datetime.datetime((date_today.year + 1), 1, 1, 0, 0)
+        days = self.pool.get('public.holidays.holidays')\
+            .get_range(cr, uid, year_begin, year_end)
+        for day in days:
+            vals = {
+                'date': day,
+            }
+            self.create(cr, uid, vals, context=context)
+        return None
+
+    _columns = {
+        'date': fields.date('Date'),
+    }
+
+    _order = "date asc"
 
 
 class holidays_days(osv.osv):
